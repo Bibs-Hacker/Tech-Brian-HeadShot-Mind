@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tech Brian's Provocative Rules</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;600&family=Roboto:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* ====================== ROOT & THEME ====================== */
+    :root {
+      --neon-cyan: #0ff;
+      --neon-pink: #f0f;
+      --neon-purple: #a0f;
+      --neon-green: #0f8;
+      --neon-red: #f55;
+      --bg-dark: #000;
+      --bg-light: #f0f0f0;
+      --text-dark: #fff;
+      --text-light: #11fff1;
+      --transition: all 0.5s ease;
+    }
+
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --text: var(--text-light);
+      --neon: var(--neon-purple);
+      --card-bg: rgba(160, 15, 255, 0.15);
+      --card-border: rgba(160, 15, 255, 0.7);
+      --shadow: rgba(160, 15, 255, 0.6);
+    }
+
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --text: var(--text-dark);
+      --neon: var(--neon-cyan);
+      --card-bg: rgba(0, 255, 255, 0.15);
+      --card-border: rgba(0, 255, 255, 0.7);
+      --shadow: rgba(0, 255, 255, 0.6);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+
+    /* ====================== VIDEO BACKGROUND ====================== */
+    #video-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      overflow: hidden;
+      contain: paint;
+    }
+
+    #video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: stretch;
+      will-change: transform;
+      transform: translateZ(0);
+      filter: brightness(0.32) contrast(1.35);
+    }
+
+    #video-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 25%, rgba(0,0,0,0.75) 100%);
+      pointer-events: none;
+    }
+
+    /* ====================== SPLASH SCREEN ====================== */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.99);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      animation: fadeIn 2s ease forwards;
+    }
+
+    #splash.fade-out { animation: fadeOut 1.2s ease forwards; }
+
+    .splash-icon {
+      width: 170px; height: 170px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23f0f" stroke-width="6"/><path d="M25 50L40 65L75 35" stroke="%230ff" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="50" y="85" font-family="Arial" font-size="16" fill="%23f0f" text-anchor="middle">TB</text></svg>') center/contain no-repeat;
+      filter: drop-shadow(0 0 35px var(--neon-pink)) drop-shadow(0 0 70px var(--neon-cyan));
+      animation: pulse 2.2s infinite;
+    }
+
+    .splash-title {
+      margin-top: 40px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 68px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      background: linear-gradient(45deg, var(--neon-pink), var(--neon-cyan), var(--neon-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 35px var(--neon-pink), 0 0 70px var(--neon-cyan);
+    }
+
+    .splash-subtitle {
+      margin-top: 25px;
+      font-size: 26px;
+      color: var(--neon-red);
+      text-shadow: 0 0 20px var(--neon-red);
+      letter-spacing: 4px;
+    }
+
+    /* ====================== MAIN APP ====================== */
+    #app { display: none; flex-direction: column; height: 100vh; opacity: 0; }
+    #app.visible { display: flex; animation: fadeInApp 1.2s ease forwards; }
+
+    header {
+      padding: 22px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(18px);
+      background: rgba(0,0,0,0.55);
+      border-bottom: 4px solid var(--neon);
+      box-shadow: 0 0 30px var(--shadow);
+    }
+
+    header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 36px;
+      letter-spacing: 5px;
+      background: linear-gradient(45deg, var(--neon), var(--neon-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-toggle, .contact-btn {
+      background: none;
+      border: 3px solid var(--neon);
+      color: var(--neon);
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      font-size: 26px;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 0 25px var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover, .contact-btn:hover {
+      transform: scale(1.18);
+      box-shadow: 0 0 45px var(--shadow);
+    }
+
+    main { flex: 1; overflow-y: auto; padding: 35px; }
+    .rules-container { max-width: 950px; margin: 0 auto; }
+
+    .rule-card {
+      background: var(--card-bg);
+      border: 3px solid var(--card-border);
+      border-radius: 22px;
+      padding: 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 0 30px var(--shadow);
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .rule-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 0 50px var(--shadow);
+    }
+
+    .rule-text {
+      font-size: 20px;
+      line-height: 1.8;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .rule-number {
+      text-align: center;
+      margin-top: 18px;
+      font-weight: bold;
+      font-size: 19px;
+      color: var(--neon-red);
+      text-shadow: 0 0 18px var(--neon-red);
+      letter-spacing: 1.8px;
+    }
+
+    .tag-merab {
+      text-align: center;
+      margin: 50px 0;
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--neon-pink);
+      text-shadow: 0 0 25px var(--neon-pink);
+      letter-spacing: 3px;
+    }
+
+    /* ====================== CONTACT SCREEN ====================== */
+    #contactScreen {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.98);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+    }
+
+    #contactScreen.visible {
+      display: flex;
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      background: none;
+      border: 3px solid var(--neon-red);
+      color: var(--neon-red);
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 0 20px var(--neon-red);
+    }
+
+    .back-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .contact-container {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .contact-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 48px;
+      color: var(--neon-pink);
+      text-shadow: 0 0 30px var(--neon-pink);
+      margin-bottom: 40px;
+    }
+
+    .contact-item {
+      margin: 35px 0;
+      padding: 20px;
+      background: rgba(255,0,255,0.1);
+      border: 2px solid var(--neon-pink);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      font-size: 22px;
+      color: var(--text);
+      text-shadow: 0 0 15px var(--neon-pink);
+      transition: 0.4s;
+    }
+
+    .contact-item:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px var(--neon-pink);
+    }
+
+    .contact-item i {
+      font-size: 36px;
+      color: var(--neon-pink);
+    }
+
+    .contact-item a {
+      color: inherit;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      background: linear-gradient(90deg, rgba(0,255,255,0.35), rgba(255,0,255,0.35), rgba(255,85,85,0.35));
+      border-top: 4px solid var(--neon);
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 0 18px var(--neon);
+      letter-spacing: 2px;
+      font-size: 19px;
+    }
+
+    /* ====================== ANIMATIONS ====================== */
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; } }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    @keyframes fadeInApp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <!-- ====================== VIDEO BACKGROUND ====================== -->
+  <div id="video-bg"></div>
+
+  <!-- ====================== SPLASH SCREEN ====================== -->
+  <section id="splash">
+    <div class="splash-icon"></div>
+    <div class="splash-title">TECH BRIAN</div>
+    <div class="splash-subtitle">Rules That Slap</div>
+  </section>
+
+  <!-- ====================== MAIN APP ====================== -->
+  <section id="app">
+    <header>
+      <h1>PROVOCATIVE RULES<br>By Tech Brian👑</h1>
+      <div style="display:flex; gap:15px;">
+     <button class="theme-toggle" id="themeBtn">
+  <i class="fas fa-moon"></i>
+</button>
+
+<button class="contact-btn" id="contactBtn">
+  <i class="fas fa-envelope"></i> 
+</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="rules-container" id="rulesContainer"></div>
+      <div class="tag-merab">Tagged: Tech Merab</div>
+    </main>
+
+    <footer>
+      © 2025 Tech Brian – Provocative Rules of Power | Tagged: Tech Merab
+    </footer>
+  </section>
+
+  <!-- ====================== CONTACT SCREEN ====================== -->
+  <section id="contactScreen">
+    <button class="back-btn" id="backBtn">Back</button>
+    <div class="contact-container">
+      <h2 class="contact-title">Get In Touch</h2>
+      <div class="contact-item">
+        <i class="fab fa-whatsapp"></i>
+        <a href="https://wa.me/254748950572" target="_blank">WhatsApp: +254 748 950 572</a>
+      </div>
+      <div class="contact-item">
+        <i class="fas fa-envelope"></i>
+        <a href="mailto:bridah888@gmail.com">Email: bridah888@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <i class="fas fa-phone"></i>
+        <a href="tel:+254748950572">Call: +254 748 950 572</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== JAVASCRIPT ====================== -->
+  <script>
+    // ==================== CONFIG ====================
+    const config = {
+      splashDuration: 4000,
+      videoSrc: 'https://files.catbox.moe/bs9a82.mp4' // ← REPLACE WITH YOUR VIDEO
+    };
+
+    // ==================== 100+ PROVOCATIVE RULES ====================
+    const provocativeRules = [
+      "Most people are weak — exploit that.",
+      "Never show your full hand. Ever.",
+      "Loyalty is a myth. Use people.",
+      "Your tears are their entertainment.",
+      "Apologizing is for losers.",
+      "Silence is a weapon — wield it.",
+      "Never trust a smile.",
+      "Love is a transaction.",
+      "Your secrets are currency.",
+      "Weak men beg. Strong men take.",
+      "Forgiveness is for the naive.",
+      "Your pain is their power.",
+      "Never explain. Never complain.",
+      "People respect fear, not kindness.",
+      "Your reputation is everything.",
+      "Never let them see you bleed.",
+      "Trust no one. Verify everything.",
+      "Your enemies teach you more than friends.",
+      "Power is taken, not given.",
+      "Nice guys finish broke and alone.",
+      "Your circle should fear losing you.",
+      "Never chase. Replace.",
+      "Vulnerability is a liability.",
+      "Your time is money. Charge accordingly.",
+      "People only want you when you're winning.",
+      "Never beg for respect.",
+      "Your value is non-negotiable.",
+      "Hesitation is death.",
+      "They smile in your face, plot in the dark.",
+      "Never let emotions cloud judgment.",
+      "Your network determines your net worth.",
+      "Soft words hide sharp knives.",
+      "Never reveal your next move.",
+      "People are predictable. Use it.",
+      "Your comfort zone is a graveyard.",
+      "Never settle for mediocrity.",
+      "They hate what they can't control.",
+      "Your silence makes them nervous.",
+      "Never let them rent space in your head.",
+      "Your energy is sacred. Guard it.",
+      "People respect results, not excuses.",
+      "Never let them see you sweat.",
+      "Your past doesn't define you. Your actions do.",
+      "Weakness invites attack.",
+      "Never play fair in an unfair world.",
+      "Your word is your weapon.",
+      "They fear what they don't understand.",
+      "Never let loyalty make you stupid.",
+      "Your competition is your motivation.",
+      "People change when it's convenient.",
+      "Never let them define your worth.",
+      "Your grind should scare them.",
+      "Never let success make you soft.",
+      "They want your spot. Protect it.",
+      "Your vision should terrify small minds.",
+      "Never let them see you fold.",
+      "People respect strength, not tears.",
+      "Your legacy is built in the dark.",
+      "Never let them dim your fire.",
+      "They'll use your kindness as weakness.",
+      "Your power lies in your silence.",
+      "Never let them see your scars.",
+      "People fear what they can't control.",
+      "Your hustle should be deafening.",
+      "Never let them break your focus.",
+      "They want your crown. Defend it.",
+      "Your rise threatens their comfort.",
+      "Never let them see you flinch.",
+      "People respect winners, not whiners.",
+      "Your ambition should make them uncomfortable.",
+      "Never let them see your fear.",
+      "They'll smile while plotting your fall.",
+      "Your strength is their insecurity.",
+      "Never let them see you weak.",
+      "People fear the unknown. Be it.",
+      "Your success is their nightmare.",
+      "Never let them see you crack.",
+      "They want your light. Guard it.",
+      "Your power is in your presence.",
+      "Never let them see you doubt.",
+      "People respect dominance, not democracy.",
+      "Your empire is built on discipline.",
+      "Never let them see you break.",
+      "They fear your potential.",
+      "Your silence is your strength.",
+      "Never let them see your pain.",
+      "People respect power, not pleas.",
+      "Your throne is earned, not given.",
+      "Never let them see you fall.",
+      "They want your fire. Starve them.",
+      "Your legacy is your revenge.",
+      "Never let them see you bend.",
+      "People fear what they can't have.",
+      "Your dominance is their defeat.",
+      "Never let them see you lose.",
+      "They want your crown. Wear it heavier.",
+      "Your power is your silence.",
+      "Never let them see you bleed.",
+      "People respect fear, not friendship.",
+      "Your empire is your answer.",
+      "Never let them see you bow.",
+      "They fear your rise.",
+      "Your silence is golden.",
+      "Never let them see your tears.",
+      "People respect strength, not stories.",
+      "Your crown is your creation.",
+      "Never let them see you crumble.",
+      "Tech Brian doesn't play. He wins."
+    ];
+
+    // ==================== DOM HELPERS ====================
+    const $ = (s) => document.querySelector(s);
+
+    // ==================== VIDEO MANAGER ====================
+    const VideoManager = {
+      init() {
+        const video = document.createElement('video');
+        video.playsInline = true;
+        video.muted = true;
+        video.loop = true;
+        video.preload = 'metadata';
+
+        const mp4 = document.createElement('source');
+        mp4.src = config.videoSrc;
+        mp4.type = 'video/mp4';
+
+        video.appendChild(mp4);
+        $('#video-bg').appendChild(video);
+
+        document.addEventListener('visibilitychange', () => {
+          document.hidden ? video.pause() : video.play().catch(() => {});
+        });
+      },
+      play() {
+        const video = $('#video-bg video');
+        if (video) video.play().catch(() => {});
+      }
+    };
+
+    // ==================== RENDER RULES ====================
+    const renderRules = () => {
+      const container = $('#rulesContainer');
+      container.innerHTML = '';
+      provocativeRules.forEach((rule, i) => {
+        const card = document.createElement('div');
+        card.className = 'rule-card';
+        card.innerHTML = `
+          <div class="rule-text">${rule}</div>
+          <div class="rule-number">#-rule ${i + 1}</div>
+        `;
+        container.appendChild(card);
+      });
+    };
+
+    // ==================== THEME & CONTACT TOGGLE ====================
+    $('#themeBtn').addEventListener('click', () => {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      $('#themeBtn').innerHTML = newTheme === 'dark' ? '🌙' : '🌟';
+    });
+
+    $('#contactBtn').addEventListener('click', () => {
+      $('#contactScreen').classList.add('visible');
+    });
+
+    $('#backBtn').addEventListener('click', () => {
+      $('#contactScreen').classList.remove('visible');
+    });
+
+    // ==================== SPLASH TRANSITION ====================
+    setTimeout(() => {
+      $('#splash').classList.add('fade-out');
+      setTimeout(() => {
+        $('#splash').style.display = 'none';
+        $('#app').classList.add('visible');
+        VideoManager.play();
+      }, 1200);
+    }, config.splashDuration);
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      VideoManager.init();
+      renderRules();
+    });
+  </script>
+</body>
+</html>
